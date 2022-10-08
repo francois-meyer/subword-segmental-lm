@@ -1,6 +1,7 @@
 # Subword Segmental Language Modelling for Nguni Languages
 
 Paper: Subword Segmental Language Modelling for Nguni Languages
+
 Francois Meyer and Jan Buys, Findings of EMNLP 2022
 
 Train subword segmental language models (SSLMs) - language models that learn how to segment words while being trained for autoregressive language modelling.

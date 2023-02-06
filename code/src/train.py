@@ -202,7 +202,6 @@ def evaluate(model, char_vocab, eval_corpus, device, batch_size, bptt_len, reg_c
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         total_predicts = 0
-        lex_coefs = []
         for batch_num, example in enumerate(tqdm(eval_corpus.iters(eval_corpus, batch_size=batch_size,
                                                                    bptt_len=bptt_len, device=device))):
             input_ids = example.text.to(device)
@@ -211,9 +210,7 @@ def evaluate(model, char_vocab, eval_corpus, device, batch_size, bptt_len, reg_c
             if model.encoder_type == "lstm":
                 if separate_lines:
                     state_h, state_c = model.encoder.get_init_states(batch_size)
-                log_alpha, log_R, (state_h, state_c), batch_lex_coefs = model(input_ids, (state_h, state_c), target_ids, mode="forward")
-                batch_lex_coefs = torch.flatten(batch_lex_coefs)
-                lex_coefs.append(batch_lex_coefs)
+                log_alpha, log_R, (state_h, state_c) = model(input_ids, (state_h, state_c), target_ids, mode="forward")
             else:
                 log_alpha, log_R = model(input_ids, (state_h, state_c), target_ids, mode="forward")
 
@@ -233,7 +230,7 @@ def evaluate(model, char_vocab, eval_corpus, device, batch_size, bptt_len, reg_c
             total_predicts += numel
 
         print(total_predicts)
-        return total_loss / total_predicts, total_R / total_predicts, total_nll / total_predicts, lex_coefs
+        return total_loss / total_predicts, total_R / total_predicts, total_nll / total_predicts
 
 
 def segment(model, char_vocab, eval_corpus, device, bptt_len, separate_lines, num_lines=1, segment_mode="segment"):
@@ -369,6 +366,10 @@ def main():
     data_dir = "../data/"
     repo_dir = "../sslm/"
 
+    data_dir = "../../../uct/data/"
+    repo_dir = "../../../phd/mslm/"
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--train_path", default=data_dir + "train.mock")
     parser.add_argument("--valid_path", default=data_dir + "valid.mock")
@@ -403,6 +404,7 @@ def main():
                      '"dropout": 0.2,' \
                      '"bptt_len": 120,' \
                      '"lr": 0.001,' \
+                     '"lr_factor": 0.5,' \
                      '"batch_size": 64,' \
                      '"weight_decay": 1e-5,' \
                      '"lr_patience": 3,' \
@@ -424,6 +426,7 @@ def main():
                      '"load_lex": false, ' \
                      '"lex_file_path": "", ' \
                      '"load_encoder": false, ' \
+                     '"separate_lines": false, ' \
                      '"only_subword": true}'
 
     parser.add_argument("--params", default=default_params)

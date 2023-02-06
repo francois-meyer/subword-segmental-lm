@@ -364,7 +364,7 @@ class SubwordSegmentalLM(nn.Module):
                 log_R = -loginf
 
             if self.encoder_type == "lstm":
-                return log_alpha[-1], log_R, (final_states[0].detach(), final_states[1].detach()), torch.exp(log_lex_proportions)
+                return log_alpha[-1], log_R, (final_states[0].detach(), final_states[1].detach())
             else:
                 return log_alpha[-1], log_R
 
